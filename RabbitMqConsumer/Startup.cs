@@ -1,16 +1,9 @@
 using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace RabbitMqConsumer
 {
@@ -29,22 +22,46 @@ namespace RabbitMqConsumer
             services.AddControllers();
 
             //Criação de conexão com o RabbitMq
-            services.AddMassTransit(
-                config =>
-                {
-                    config.AddConsumer<OrderConsumer>();
-                    config.UsingRabbitMq(
-                        (ctx, cfg) =>
-                        {
-                            cfg.Host("amqp://guest:guest@localhost:5672");
+            //services.AddMassTransit(
+            //    config =>
+            //    {
+            //        config.AddConsumer<OrderConsumer>();
+            //        config.UsingRabbitMq(
+            //            (ctx, cfg) =>
+            //            {
+            //                cfg.ConnectReceiveObserver(new ReceiveObserver());
 
-                            cfg.ReceiveEndpoint("order-queue", c => {
-                                c.ConfigureConsumer<OrderConsumer>(ctx);
-                            });
-                        }
-                        );
-                }
+            //                cfg.Host("amqp://guest:guest@localhost:5672");
+
+            //                cfg.ReceiveEndpoint("order-queue", c =>
+            //                {
+            //                    c.ConfigureConsumer<OrderConsumer>(ctx);
+            //                });
+            //            }
+            //            );
+            //    }
+            //    );
+
+            services.AddMassTransit(
+                config => config.UsingRabbitMq()
                 );
+
+            var busControl = Bus.Factory.CreateUsingRabbitMq(cfg =>
+            {
+                cfg.Host("amqp://guest:guest@localhost:5672");
+
+                cfg.ReceiveEndpoint("order-queue", e =>
+                {
+                    e.Consumer<OrderConsumer>();
+                });
+            });
+
+            var observer = new ReceiveObserver();
+
+            busControl.StartAsync();
+
+            var handle = busControl.ConnectReceiveObserver(observer);
+
 
             //Ele cria o Bus e controla o mesmo
             services.AddMassTransitHostedService();
