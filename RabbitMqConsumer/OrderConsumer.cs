@@ -12,15 +12,27 @@ namespace RabbitMqConsumer
             //throw new InvalidOperationException();
             System.Diagnostics.Debug.WriteLine(context.Message.Name);
 
-            if (context.Message.Name == "Redeliver")
+            if (context.Message.Name == "Rejected")
             {
-                context.Redeliver(TimeSpan.FromSeconds(300));
-                context.Publish(context.Message);
+                int? maxAttempts = context.GetRedeliveryCount();
+
+                if (maxAttempts > 3)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Número de tentativas {maxAttempts}, excedeu o número máximo {3}.");
+                    throw new Exception("Número de tentativas excedidas.");
+                }
+
+                await context.Defer(TimeSpan.FromSeconds(15));
             }
 
             if (context.Message.Name == "Error")
             {
-                throw new Exception();
+                throw new NotImplementedException();
+            }
+
+            if (context.Message.Name == "Success")
+            {
+                await context.Publish<OrderSubmitted>(new { context.Message.Name });
             }
         }
     }

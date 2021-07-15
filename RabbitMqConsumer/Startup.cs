@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using GreenPipes;
+using System;
 
 namespace RabbitMqConsumer
 {
@@ -52,6 +54,12 @@ namespace RabbitMqConsumer
 
                 cfg.ReceiveEndpoint("order-queue", e =>
                 {
+                    e.UseMessageRetry(r => {
+                        r.Immediate(5);
+                        r.Handle<ArgumentNullException>();
+                        r.Handle<NotImplementedException>();
+                        r.Ignore(typeof(InvalidOperationException), typeof(InvalidCastException));
+                    });
                     e.Consumer<OrderConsumer>();
                 });
             });

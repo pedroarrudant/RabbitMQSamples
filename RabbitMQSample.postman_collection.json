@@ -1,0 +1,38 @@
+{
+	"info": {
+		"_postman_id": "d2fdf09d-44c3-447f-beec-fa0a24953f9f",
+		"name": "RabbitMQSample",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Postar mensagem",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Name\":\"Redeliver\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5001/publisher/postar-mensagem",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"publisher",
+						"postar-mensagem"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
